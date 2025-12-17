@@ -35,5 +35,9 @@ class Grid:
         self.set_cell(x, y, EMPTY)
 
         
-        
+    def display(self):
+    
+        for row in self.grid:
+            print(' '.join(str(cell) for cell in row))
+        print()       
      
