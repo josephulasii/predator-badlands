@@ -14,8 +14,7 @@ class Grid:
         wrapped_x = x % self.width
         wrapped_y = y % self.height
         return wrapped_x, wrapped_y
-        
-      
+             
     
     def get_cell(self, x, y):
         wrapped_x, wrapped_y = self.wrap_position(x, y)
@@ -31,6 +30,10 @@ class Grid:
             return True
         else:
             return False
+        
+    def clear_cell(self,x,y):
+        self.set_cell(x, y, EMPTY)
+
         
         
      
