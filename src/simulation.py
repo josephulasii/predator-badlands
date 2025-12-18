@@ -4,8 +4,7 @@ from agents.predator import Predator
 from agents.boss import Adversary
 from agents.Creature import Creature  
 from agents.synthetic import Synthetic
-from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA
-
+from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
 class Simulation:
     
     def __init__(self):
@@ -17,12 +16,12 @@ class Simulation:
         self.brother = Predator(8, 15, name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA)
         self.thia = Synthetic(5, 8)
         self.creatures = [
-        Creature(5, 5),
+        Creature(5, 1),
         Creature(10, 10),
         Creature(15, 2)]
         self.grid.set_cell(1, 1, PREDATOR)
         self.grid.set_cell(18, 18, ADVERSARY)
-        self.grid.set_cell(5, 5, CREATURE)
+        self.grid.set_cell(5, 1, CREATURE)
         self.grid.set_cell(10, 10, CREATURE)
         self.grid.set_cell(15, 2, CREATURE)  
         self.grid.set_cell(3, 10, FATHER)
@@ -49,6 +48,7 @@ class Simulation:
                 creature.take_damage(dek_damage)
 
                 if creature.is_alive() == False:
+                    self.dek.gain_honour(HONOUR_KILL_CREATURE)
                     print("Creature is Dead")
                     self.grid.clear_cell(*creature.get_position())
                     
@@ -60,13 +60,17 @@ class Simulation:
             self.adversary.take_damage(dek_damage)
             adversary_damage = self.adversary.attack()
             self.dek.take_damage(adversary_damage)
+
+            if self.adversary.is_alive() == False:
+                self.dek.gain_honour(HONOUR_KILL_BOSS)
+                print("Boss is Dead!")
                 
             
     
     
     def display(self):
         print(f"Turn Number: {self.turncount}") 
-        print(f"Dek Stamina: {self.dek.stamina} Dek Position: {self.dek.get_position()}  Dek Health: {self.dek.health}")
+        print(f"Dek Stamina: {self.dek.stamina} Dek Position: {self.dek.get_position()}  Dek Health: {self.dek.health}  Dek Honour: {self.dek.honour}")
         print(f"Boss Position: {self.adversary.get_position()}  Boss Health: {self.adversary.health}")
         self.grid.display()
         

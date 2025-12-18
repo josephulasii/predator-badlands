@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from utils.constants import PREDATOR_HEALTH, PREDATOR_STAMINA, MOVE_COST,STAMINA_RESTORE
+from utils.constants import PREDATOR_HEALTH, PREDATOR_STAMINA, MOVE_COST,STAMINA_RESTORE,STARTING_HONOUR
 
 
 class Predator(BaseAgent):
@@ -8,6 +8,7 @@ class Predator(BaseAgent):
         super().__init__(x, y, health)
         self.stamina = stamina
         self.name = name
+        self.honour = STARTING_HONOUR
        
         
        
@@ -29,6 +30,11 @@ class Predator(BaseAgent):
 
     def attack(self):
         return (20)
+    
+
+    def gain_honour(self, amount):
+        self.honour = self.honour + amount
+        print(f"{self.name} Gained {amount} Honour! Total: {self.honour}")
               
             
         
