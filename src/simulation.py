@@ -3,7 +3,7 @@ from grid import Grid
 from agents.predator import Predator
 from agents.boss import Adversary
 from agents.Creature import Creature  
-from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE
+from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, FATHER, BROTHER, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA
 
 
 class Simulation:
@@ -13,6 +13,8 @@ class Simulation:
         self.grid = Grid()
         self.dek = Predator(1, 1)
         self.adversary = Adversary(18,18)
+        self.father = Predator(3, 10, name="Father", health=FATHER_HEALTH, stamina=FATHER_STAMINA)
+        self.brother = Predator(8, 15, name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA)
         self.creatures = [
         Creature(5, 5),
         Creature(10, 10),
@@ -22,6 +24,8 @@ class Simulation:
         self.grid.set_cell(5, 5, CREATURE)
         self.grid.set_cell(10, 10, CREATURE)
         self.grid.set_cell(15, 2, CREATURE)  
+        self.grid.set_cell(3, 10, FATHER)
+        self.grid.set_cell(8, 15, BROTHER)
         self.turncount = 0 
     
     def run_turn(self):
