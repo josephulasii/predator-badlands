@@ -14,7 +14,7 @@ def main():
             break
 
         if simulation.adversary.is_alive() == False:
-            print("Dek has Killed The Boss")
+            print("Dek has Killed The Boss" )
             break
 
 

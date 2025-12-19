@@ -51,6 +51,36 @@ class Simulation:
                     self.dek.gain_honour(HONOUR_KILL_CREATURE)
                     print("Creature is Dead")
                     self.grid.clear_cell(*creature.get_position())
+
+
+        brother_x, brother_y = self.brother.get_position()
+        father_x, father_y = self.father.get_position()
+        dek_x, dek_y = self.dek.get_position()
+
+        father_distance_to_dek = abs(dek_x - father_x) + abs(dek_y - father_y)
+        if father_distance_to_dek <= 3 and self.dek.honour > 30:
+            print("Father: You  Have Brought Honour To Me")
+        elif father_distance_to_dek <= 3 and self.dek.honour < 30:
+            print("Father: You  Have Shamed me ")
+
+        brother_distance_to_dek = abs(dek_x - brother_x) + abs(dek_y - brother_y)
+        if brother_distance_to_dek <= 3 and self.dek.honour > 30:
+            print("Brother: You  Have Brought Honour To Me")
+        elif brother_distance_to_dek <= 3 and self.dek.honour < 30:
+            print("Brother: You  Have Shamed me ")
+
+
+
+
+
+
+
+
+
+
+
+
+
                     
            
         
