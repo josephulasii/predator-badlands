@@ -83,6 +83,7 @@ class Simulation:
              if self.dek.get_position() == trap_pos:
                 print(" Dek Stepped on a trap")
                 self.dek.stamina = self.dek.stamina - 15
+                self.dek.lose_honour(5)
                 print(f"Lost 15 stamina! Current stamina: {self.dek.stamina}")
                 self.traps.remove(trap_pos)
                 self.grid.clear_cell(trap_pos[0], trap_pos[1])
