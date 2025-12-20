@@ -79,8 +79,14 @@ class Simulation:
         self.grid.set_cell(new_x, new_y, PREDATOR)
 
 
-
-
+        for trap_pos in self.traps:
+             if self.dek.get_position() == trap_pos:
+                print(" Dek Stepped on a trap")
+                self.dek.stamina = self.dek.stamina - 15
+                print(f"Lost 15 stamina! Current stamina: {self.dek.stamina}")
+                self.traps.remove(trap_pos)
+                self.grid.clear_cell(trap_pos[0], trap_pos[1])
+                break
 
 
         
@@ -111,9 +117,29 @@ class Simulation:
             print("Brother: You  Have Brought Honour To Me")
         elif brother_distance_to_dek <= 3 and self.dek.honour < 30:
             print("Brother: You  Have Shamed me ")
+      
 
+       
+        thia_x, thia_y = self.thia.get_position()
+        dek_x, dek_y = self.dek.get_position()
+        thia_distance = abs(dek_x - thia_x) + abs(dek_y - thia_y)
 
-
+        if thia_distance <= 5:
+            creature_count = 0
+            for creature in self.creatures:
+                if creature.is_alive():
+                    creature_x, creature_y = creature.get_position()
+                    creature_distance = abs(dek_x - creature_x) + abs(dek_y - creature_y)
+                    
+                    if creature_distance < 5:
+                        creature_count = creature_count + 1           
+            print(f"Thia: I detect {creature_count} creatures nearby")
+            boss_x, boss_y = self.adversary.get_position()
+            boss_distance = abs(dek_x - boss_x) + abs(dek_y - boss_y)
+            print(f"Thia: The adversary is {boss_distance} cells away")
+            if self.dek.stamina < 30:
+                print("Thia: Warning - your stamina is critically low")
+                
 
 
         if self.dek.get_position() == self.adversary.get_position():
