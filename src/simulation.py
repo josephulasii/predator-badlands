@@ -60,13 +60,6 @@ class Simulation:
 
 
 
-
-
-
-
-
-
-
     def run_turn(self):
         self.turncount = self.turncount + 1
        
@@ -88,6 +81,36 @@ class Simulation:
                 self.traps.remove(trap_pos)
                 self.grid.clear_cell(trap_pos[0], trap_pos[1])
                 break
+            
+        if self.father.stamina >= 7:
+       
+            directions = [(1,0), (-1,0), (0,1), (0,-1)]
+            random_direction = random.choice(directions)
+            
+            old_father_pos = self.father.get_position()
+            self.father.move(random_direction[0], random_direction[1])
+            new_father_pos = self.father.get_position()
+            
+            
+            self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
+            self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
+            
+            
+            
+        if self.brother.stamina >= 7:
+
+            directions = [(1,0), (-1,0), (0,1), (0,-1)]
+            random_direction = random.choice(directions)
+            
+            old_brother_pos = self.brother.get_position()
+            self.brother.move(random_direction[0], random_direction[1])
+            new_brother_pos = self.brother.get_position()
+            
+            
+            self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
+            self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
+                
+        
 
 
         
