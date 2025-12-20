@@ -1,34 +1,72 @@
-
+import random
 from grid import Grid
 from agents.predator import Predator
 from agents.boss import Adversary
 from agents.Creature import Creature  
 from agents.synthetic import Synthetic
-from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
+from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE,TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
 class Simulation:
-    
     def __init__(self):
-        
         self.grid = Grid()
-        self.dek = Predator(1, 1)
-        self.adversary = Adversary(18,18)
-        self.father = Predator(3, 10, name="Father", health=FATHER_HEALTH, stamina=FATHER_STAMINA)
-        self.brother = Predator(8, 15, name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA)
-        self.thia = Synthetic(5, 8)
-        self.creatures = [
-        Creature(5, 1),
-        Creature(10, 10),
-        Creature(15, 2)]
-        self.grid.set_cell(1, 1, PREDATOR)
-        self.grid.set_cell(18, 18, ADVERSARY)
-        self.grid.set_cell(5, 1, CREATURE)
-        self.grid.set_cell(10, 10, CREATURE)
-        self.grid.set_cell(15, 2, CREATURE)  
-        self.grid.set_cell(3, 10, FATHER)
-        self.grid.set_cell(8, 15, BROTHER)
-        self.grid.set_cell(5, 8, SYNTHETIC)
-        self.turncount = 0 
-    
+
+
+        dek_pos = self.get_random_empty_position()
+        self.dek = Predator(dek_pos[0], dek_pos[1])
+        self.grid.set_cell(dek_pos[0], dek_pos[1], PREDATOR)
+
+
+        adversary_pos = self.get_random_empty_position()
+        self.adversary = Adversary(adversary_pos[0], adversary_pos[1])
+        self.grid.set_cell(adversary_pos[0], adversary_pos[1], ADVERSARY)
+
+
+        father_pos = self.get_random_empty_position()
+        self.father = Predator(father_pos[0], father_pos[1], name="Father", health=FATHER_HEALTH,stamina=FATHER_STAMINA)
+        self.grid.set_cell(father_pos[0], father_pos[1], FATHER)
+
+
+        brother_pos = self.get_random_empty_position()
+        self.brother = Predator(brother_pos[0], brother_pos[1], name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA)
+        self.grid.set_cell(brother_pos[0], brother_pos[1], BROTHER)
+
+
+        thia_pos = self.get_random_empty_position()
+        self.thia = Synthetic(thia_pos[0], thia_pos[1])
+        self.grid.set_cell(thia_pos[0], thia_pos[1], SYNTHETIC)
+
+
+        self.creatures = []
+        for i in range(3):
+            creature_pos = self.get_random_empty_position()
+            creature = Creature(creature_pos[0], creature_pos[1])
+            self.creatures.append(creature)
+            self.grid.set_cell(creature_pos[0], creature_pos[1], TRAP)
+
+        self.traps = []
+        for i in range(7):
+            trap_pos = self.get_random_empty_position()
+            self.traps.append(trap_pos)
+            self.grid.set_cell(trap_pos[0], trap_pos[1], TRAP)
+
+        self.turncount = 0
+    def get_random_empty_position(self):
+
+        while True:
+            random_x = random.randint(0,19)
+            random_y = random.randint(0, 19)
+            if self.grid.get_cell(random_x, random_y) == EMPTY:
+                return random_x, random_y
+
+
+
+
+
+
+
+
+
+
+
     def run_turn(self):
         self.turncount = self.turncount + 1
        
@@ -39,6 +77,11 @@ class Simulation:
     
         self.grid.clear_cell(old_x, old_y)
         self.grid.set_cell(new_x, new_y, PREDATOR)
+
+
+
+
+
 
         
         for creature in self.creatures:
@@ -72,18 +115,6 @@ class Simulation:
 
 
 
-
-
-
-
-
-
-
-
-
-                    
-           
-        
 
         if self.dek.get_position() == self.adversary.get_position():
             dek_damage = self.dek.attack()
