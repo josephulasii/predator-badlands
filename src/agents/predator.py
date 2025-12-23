@@ -9,21 +9,26 @@ class Predator(BaseAgent):
         self.stamina = stamina
         self.name = name
         self.honour = STARTING_HONOUR
+        self.carrying_thia = False
        
         
        
     
     def move(self, dx, dy):
-        
-        if self.stamina >= MOVE_COST:
-            super().move(dx,dy)
-            self.stamina = self.stamina - MOVE_COST
+      
+        if self.carrying_thia:
+            move_cost = MOVE_COST + 5
         else:
-           print("No Stamina to Move")
-        
-        if self.honour > 0:
-            self.honour = self.honour - 3
-            print(f"Lost 3 honour for exhaustion! Current honour: {self.honour}")
+            move_cost = MOVE_COST
+            
+        if self.stamina >= move_cost:
+            super().move(dx, dy)
+            self.stamina = self.stamina - move_cost
+        else:
+            print("No Stamina to Move")
+            if self.honour > 0:
+                self.honour = self.honour - 3
+                print(f"Lost 3 honour for exhaustion! Current honour: {self.honour}")
 
     def rest(self):
         self.stamina = self.stamina + STAMINA_RESTORE

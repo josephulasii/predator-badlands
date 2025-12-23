@@ -40,7 +40,7 @@ class Simulation:
             creature_pos = self.get_random_empty_position()
             creature = Creature(creature_pos[0], creature_pos[1])
             self.creatures.append(creature)
-            self.grid.set_cell(creature_pos[0], creature_pos[1], TRAP)
+            self.grid.set_cell(creature_pos[0], creature_pos[1], CREATURE)
 
         self.traps = []
         for i in range(7):
@@ -70,6 +70,22 @@ class Simulation:
     
         self.grid.clear_cell(old_x, old_y)
         self.grid.set_cell(new_x, new_y, PREDATOR)
+        
+        if self.dek.carrying_thia == False:
+            dek_x, dek_y = self.dek.get_position()
+            thia_x, thia_y = self.thia.get_position()
+            distance_to_thia = abs(dek_x - thia_x) + abs(dek_y - thia_y)
+            
+            if distance_to_thia <= 1:  
+                self.dek.carrying_thia = True
+                print("Dek picked up Thia")
+                self.grid.clear_cell(thia_x, thia_y)
+                
+        if self.dek.carrying_thia:
+            dek_x, dek_y = self.dek.get_position()
+            self.thia.x = dek_x
+            self.thia.y = dek_y
+                    
 
 
         for trap_pos in self.traps:
