@@ -5,6 +5,7 @@ from agents.boss import Adversary
 from agents.Creature import Creature  
 from agents.synthetic import Synthetic
 from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE,TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
+from algorithms.pathfinding import a_star
 class Simulation:
     def __init__(self):
         self.grid = Grid()
@@ -63,14 +64,32 @@ class Simulation:
     def run_turn(self):
         self.turncount = self.turncount + 1
        
-        old_x, old_y = self.dek.get_position()  
-        self.dek.move(1, 0)
-        new_x, new_y = self.dek.get_position()  
-       
-    
-        self.grid.clear_cell(old_x, old_y)
-        self.grid.set_cell(new_x, new_y, PREDATOR)
-        
+        dek_x, dek_y = self.dek.get_position()
+        boss_x, boss_y = self.adversary.get_position()
+
+        trap_positions = self.traps.copy()
+
+        path = a_star(self.grid, (dek_x, dek_y), (boss_x, boss_y), obstacles=trap_positions)
+
+        if path and len(path) > 1:
+            next_step = path[1]
+            dx = next_step[0] - dek_x
+            dy = next_step[1] - dek_y
+            
+            old_x, old_y = self.dek.get_position()
+            self.dek.move(dx, dy)
+            new_x, new_y = self.dek.get_position()
+            
+            self.grid.clear_cell(old_x, old_y)
+            self.grid.set_cell(new_x, new_y, PREDATOR)
+        else:
+            old_x, old_y = self.dek.get_position()
+            self.dek.move(1, 0)
+            new_x, new_y = self.dek.get_position()
+            
+            self.grid.clear_cell(old_x, old_y)
+            self.grid.set_cell(new_x, new_y, PREDATOR)
+                
         if self.dek.carrying_thia == False:
             dek_x, dek_y = self.dek.get_position()
             thia_x, thia_y = self.thia.get_position()
