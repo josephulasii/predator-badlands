@@ -99,33 +99,118 @@ class Simulation:
                 break
             
         if self.father.stamina >= 7:
-       
-            directions = [(1,0), (-1,0), (0,1), (0,-1)]
-            random_direction = random.choice(directions)
+            father_x, father_y = self.father.get_position()
+            dek_x, dek_y = self.dek.get_position()
+            father_distance = abs(dek_x - father_x) + abs(dek_y - father_y)
+        
+        
+            if father_distance <= 1 and self.dek.honour < 20:
+                print("Father: I Challenge You To Combat")
+                father_damage = self.father.attack()
+                self.dek.take_damage(father_damage)
+                print(f"Father dealt {father_damage} damage! Dek health: {self.dek.health}")
+                
+                
+                dek_damage = self.dek.attack()
+                self.father.take_damage(dek_damage)
+                print(f"Dek Dealt {dek_damage} Damage To Father!")
+                self.dek.lose_honour(5)
+        
+        
+            elif father_distance <= 5 and self.dek.honour < 20:
+                print(" Father pursues you for bringing shame!")
+                
+                dx = 0
+                dy = 0
+                if father_x < dek_x:
+                    dx = 1 
+                elif father_x > dek_x:
+                    dx = -1     
+                if father_y < dek_y:
+                    dy = 1  
+                elif father_y > dek_y:
+                    dy = -1       
+                if dx != 0:
+                    move_dir = (dx, 0)
+                else:
+                    move_dir = (0, dy)
+                
+                old_father_pos = self.father.get_position()
+                self.father.move(move_dir[0], move_dir[1])
+                new_father_pos = self.father.get_position()
+                
+                self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
+                self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
             
-            old_father_pos = self.father.get_position()
-            self.father.move(random_direction[0], random_direction[1])
-            new_father_pos = self.father.get_position()
-            
-            
-            self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
-            self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
-            
-            
+        
+            else:
+                directions = [(1,0), (-1,0), (0,1), (0,-1)]
+                random_direction = random.choice(directions)
+                
+                old_father_pos = self.father.get_position()
+                self.father.move(random_direction[0], random_direction[1])
+                new_father_pos = self.father.get_position()
+                
+                self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
+                self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
+                
+                
             
         if self.brother.stamina >= 7:
-
-            directions = [(1,0), (-1,0), (0,1), (0,-1)]
-            random_direction = random.choice(directions)
-            
-            old_brother_pos = self.brother.get_position()
-            self.brother.move(random_direction[0], random_direction[1])
-            new_brother_pos = self.brother.get_position()
+            brother_x, brother_y = self.brother.get_position()
+            dek_x, dek_y = self.dek.get_position()
+            brother_distance = abs(dek_x - brother_x) + abs(dek_y - brother_y)
             
             
-            self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
-            self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
+            if brother_distance <= 1 and self.dek.honour < 20:
+                print("Brother: I Challenge You To Combat!")
+                brother_damage = self.brother.attack()
+                self.dek.take_damage(brother_damage)
+                print(f"Brother dealt {brother_damage} damage! Dek health: {self.dek.health}")
                 
+                dek_damage = self.dek.attack()
+                self.brother.take_damage(dek_damage)
+                print(f"Dek Dealt {dek_damage} Damage To Brother!")
+                self.dek.lose_honour(5)
+            
+            
+            elif brother_distance <= 5 and self.dek.honour < 20:
+                print("Brother pursues you for bringing shame!")
+                
+                dx = 0
+                dy = 0
+                if brother_x < dek_x:
+                    dx = 1 
+                elif brother_x > dek_x:
+                    dx = -1     
+                if brother_y < dek_y:
+                    dy = 1  
+                elif brother_y > dek_y:
+                    dy = -1       
+                if dx != 0:
+                    move_dir = (dx, 0)
+                else:
+                    move_dir = (0, dy)
+                
+                old_brother_pos = self.brother.get_position()
+                self.brother.move(move_dir[0], move_dir[1])
+                new_brother_pos = self.brother.get_position()
+                
+                self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
+                self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
+            
+            
+            else:
+                directions = [(1,0), (-1,0), (0,1), (0,-1)]
+                random_direction = random.choice(directions)
+                
+                old_brother_pos = self.brother.get_position()
+                self.brother.move(random_direction[0], random_direction[1])
+                new_brother_pos = self.brother.get_position()
+                
+                self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
+                self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
+                        
         
 
 
