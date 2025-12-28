@@ -9,9 +9,9 @@ class BaseAgent:
     
         
     def move(self, dx, dy):
-
-        self.x = self.x + dx
-        self.y = self.y + dy
+        
+        self.x = (self.x + dx) % 20
+        self.y = (self.y + dy) % 20
         
         
         

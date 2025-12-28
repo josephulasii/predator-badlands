@@ -22,12 +22,12 @@ class Simulation:
 
 
         father_pos = self.get_random_empty_position()
-        self.father = Predator(father_pos[0], father_pos[1], name="Father", health=FATHER_HEALTH,stamina=FATHER_STAMINA)
+        self.father = Predator(father_pos[0], father_pos[1], name="Father", health=FATHER_HEALTH,stamina=FATHER_STAMINA ,attack_damage=15)
         self.grid.set_cell(father_pos[0], father_pos[1], FATHER)
 
 
         brother_pos = self.get_random_empty_position()
-        self.brother = Predator(brother_pos[0], brother_pos[1], name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA)
+        self.brother = Predator(brother_pos[0], brother_pos[1], name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA ,attack_damage=15)
         self.grid.set_cell(brother_pos[0], brother_pos[1], BROTHER)
 
 
@@ -285,7 +285,27 @@ class Simulation:
                 print("Thia: Warning - your stamina is critically low")
                 
 
+        boss_x, boss_y = self.adversary.get_position()
+        dek_x, dek_y = self.dek.get_position()
 
+        boss_path = a_star(self.grid, (boss_x, boss_y), (dek_x, dek_y), obstacles=[])
+
+        if boss_path and len(boss_path) > 1:
+            next_step = boss_path[1]
+            dx = next_step[0] - boss_x
+            dy = next_step[1] - boss_y
+            
+            old_boss_pos = self.adversary.get_position()
+            self.adversary.x = self.adversary.x + dx
+            self.adversary.y = self.adversary.y + dy
+            new_boss_pos = self.adversary.get_position()
+            
+            self.grid.clear_cell(old_boss_pos[0], old_boss_pos[1])
+            self.grid.set_cell(new_boss_pos[0], new_boss_pos[1], ADVERSARY)
+            
+            print(f"Boss hunts Dek! Distance: {len(boss_path)-1} cells")
+                
+        
         if self.dek.get_position() == self.adversary.get_position():
             dek_damage = self.dek.attack()
             self.adversary.take_damage(dek_damage)

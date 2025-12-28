@@ -10,6 +10,6 @@ class Adversary(BaseAgent):
         
     
     def attack(self):
-        return (50)
+        return (20)
        
        
