@@ -4,37 +4,32 @@ from agents.predator import Predator
 from agents.boss import Adversary
 from agents.Creature import Creature  
 from agents.synthetic import Synthetic
-from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE,TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
+from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
 from algorithms.pathfinding import a_star
+
 class Simulation:
     def __init__(self):
         self.grid = Grid()
-
 
         dek_pos = self.get_random_empty_position()
         self.dek = Predator(dek_pos[0], dek_pos[1])
         self.grid.set_cell(dek_pos[0], dek_pos[1], PREDATOR)
 
-
         adversary_pos = self.get_random_empty_position()
         self.adversary = Adversary(adversary_pos[0], adversary_pos[1])
         self.grid.set_cell(adversary_pos[0], adversary_pos[1], ADVERSARY)
 
-
         father_pos = self.get_random_empty_position()
-        self.father = Predator(father_pos[0], father_pos[1], name="Father", health=FATHER_HEALTH,stamina=FATHER_STAMINA ,attack_damage=15)
+        self.father = Predator(father_pos[0], father_pos[1], name="Father", health=FATHER_HEALTH, stamina=FATHER_STAMINA, attack_damage=15)
         self.grid.set_cell(father_pos[0], father_pos[1], FATHER)
 
-
         brother_pos = self.get_random_empty_position()
-        self.brother = Predator(brother_pos[0], brother_pos[1], name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA ,attack_damage=15)
+        self.brother = Predator(brother_pos[0], brother_pos[1], name="Brother", health=BROTHER_HEALTH, stamina=BROTHER_STAMINA, attack_damage=15)
         self.grid.set_cell(brother_pos[0], brother_pos[1], BROTHER)
-
 
         thia_pos = self.get_random_empty_position()
         self.thia = Synthetic(thia_pos[0], thia_pos[1])
         self.grid.set_cell(thia_pos[0], thia_pos[1], SYNTHETIC)
-
 
         self.creatures = []
         for i in range(3):
@@ -50,45 +45,119 @@ class Simulation:
             self.grid.set_cell(trap_pos[0], trap_pos[1], TRAP)
 
         self.turncount = 0
+        
     def get_random_empty_position(self):
-
         while True:
-            random_x = random.randint(0,19)
+            random_x = random.randint(0, 19)
             random_y = random.randint(0, 19)
             if self.grid.get_cell(random_x, random_y) == EMPTY:
                 return random_x, random_y
 
+    def find_nearest_alive_creature(self):
+        
+        dek_x, dek_y = self.dek.get_position()
+        nearest = None
+        min_distance = 999
+        
+        for creature in self.creatures:
+            if creature.is_alive():
+                cx, cy = creature.get_position()
+                distance = abs(dek_x - cx) + abs(dek_y - cy)
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest = creature
+        
+        return nearest
 
+    def move_dek(self, dx, dy):
+        
+        old_x, old_y = self.dek.get_position()
+        self.dek.move(dx, dy)
+        new_x, new_y = self.dek.get_position()
+        
+        self.grid.clear_cell(old_x, old_y)
+        self.grid.set_cell(new_x, new_y, PREDATOR)
 
+    def move_dek_along_path(self, path):
+        
+        dek_x, dek_y = self.dek.get_position()
+        next_step = path[1]
+        dx = next_step[0] - dek_x
+        dy = next_step[1] - dek_y
+        self.move_dek(dx, dy)
+
+    def hunt_creature(self, creature):
+        
+        dek_x, dek_y = self.dek.get_position()
+        cx, cy = creature.get_position()
+        
+        path = a_star(self.grid, (dek_x, dek_y), (cx, cy), obstacles=self.traps)
+        
+        if path and len(path) > 1:
+            self.move_dek_along_path(path)
+
+    def flee_from_boss(self):
+        
+        dek_x, dek_y = self.dek.get_position()
+        boss_x, boss_y = self.adversary.get_position()
+        
+        dx = -1 if dek_x < boss_x else 1 if dek_x > boss_x else 0
+        dy = -1 if dek_y < boss_y else 1 if dek_y > boss_y else 0
+        
+        if dx == 0 and dy == 0:
+            dx = 1
+        
+        self.move_dek(dx if dx != 0 else 0, dy if dy != 0 else 0)
+
+    def pursue_boss(self):
+        
+        dek_x, dek_y = self.dek.get_position()
+        boss_x, boss_y = self.adversary.get_position()
+        
+        path = a_star(self.grid, (dek_x, dek_y), (boss_x, boss_y), obstacles=self.traps)
+        
+        if path and len(path) > 1:
+            self.move_dek_along_path(path)
+
+    def dek_rule_based_ai(self):
+        
+        
+        dek_x, dek_y = self.dek.get_position()
+        boss_x, boss_y = self.adversary.get_position()
+        boss_distance = abs(dek_x - boss_x) + abs(dek_y - boss_y)
+        
+      
+        if self.dek.stamina < 30:
+            print("RULE 1: Low stamina → RESTING")
+            self.dek.rest()
+            return
+        
+       
+        if self.dek.honour < 15:
+            print("RULE 2: Low honour → HUNTING CREATURES")
+            nearest = self.find_nearest_alive_creature()
+            if nearest:
+                self.hunt_creature(nearest)
+            else:
+                print("No creatures available, pursuing boss")
+                self.pursue_boss()
+            return
+        
+       
+        if self.dek.health < 30 and boss_distance < 5:
+            print("RULE 3: Low health + boss nearby → FLEEING")
+            self.flee_from_boss()
+            return
+        
+      
+        print("RULE 4: Pursuing boss")
+        self.pursue_boss()
 
     def run_turn(self):
         self.turncount = self.turncount + 1
        
-        dek_x, dek_y = self.dek.get_position()
-        boss_x, boss_y = self.adversary.get_position()
-
-        trap_positions = self.traps.copy()
-
-        path = a_star(self.grid, (dek_x, dek_y), (boss_x, boss_y), obstacles=trap_positions)
-
-        if path and len(path) > 1:
-            next_step = path[1]
-            dx = next_step[0] - dek_x
-            dy = next_step[1] - dek_y
-            
-            old_x, old_y = self.dek.get_position()
-            self.dek.move(dx, dy)
-            new_x, new_y = self.dek.get_position()
-            
-            self.grid.clear_cell(old_x, old_y)
-            self.grid.set_cell(new_x, new_y, PREDATOR)
-        else:
-            old_x, old_y = self.dek.get_position()
-            self.dek.move(1, 0)
-            new_x, new_y = self.dek.get_position()
-            
-            self.grid.clear_cell(old_x, old_y)
-            self.grid.set_cell(new_x, new_y, PREDATOR)
+      
+        self.dek_rule_based_ai()
                 
         if self.dek.carrying_thia == False:
             dek_x, dek_y = self.dek.get_position()
@@ -104,12 +173,10 @@ class Simulation:
             dek_x, dek_y = self.dek.get_position()
             self.thia.x = dek_x
             self.thia.y = dek_y
-                    
-
 
         for trap_pos in self.traps:
-             if self.dek.get_position() == trap_pos:
-                print(" Dek Stepped on a trap")
+            if self.dek.get_position() == trap_pos:
+                print("Dek Stepped on a trap")
                 self.dek.stamina = self.dek.stamina - 15
                 self.dek.lose_honour(5)
                 print(f"Lost 15 stamina! Current stamina: {self.dek.stamina}")
@@ -122,22 +189,19 @@ class Simulation:
             dek_x, dek_y = self.dek.get_position()
             father_distance = abs(dek_x - father_x) + abs(dek_y - father_y)
         
-        
             if father_distance <= 1 and self.dek.honour < 20:
                 print("Father: I Challenge You To Combat")
                 father_damage = self.father.attack()
                 self.dek.take_damage(father_damage)
                 print(f"Father dealt {father_damage} damage! Dek health: {self.dek.health}")
                 
-                
                 dek_damage = self.dek.attack()
                 self.father.take_damage(dek_damage)
                 print(f"Dek Dealt {dek_damage} Damage To Father!")
                 self.dek.lose_honour(5)
         
-        
             elif father_distance <= 5 and self.dek.honour < 20:
-                print(" Father pursues you for bringing shame!")
+                print("Father pursues you for bringing shame!")
                 
                 dx = 0
                 dy = 0
@@ -160,10 +224,9 @@ class Simulation:
                 
                 self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
                 self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
-            
         
             else:
-                directions = [(1,0), (-1,0), (0,1), (0,-1)]
+                directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
                 random_direction = random.choice(directions)
                 
                 old_father_pos = self.father.get_position()
@@ -172,14 +235,11 @@ class Simulation:
                 
                 self.grid.clear_cell(old_father_pos[0], old_father_pos[1])
                 self.grid.set_cell(new_father_pos[0], new_father_pos[1], FATHER)
-                
-                
             
         if self.brother.stamina >= 7:
             brother_x, brother_y = self.brother.get_position()
             dek_x, dek_y = self.dek.get_position()
             brother_distance = abs(dek_x - brother_x) + abs(dek_y - brother_y)
-            
             
             if brother_distance <= 1 and self.dek.honour < 20:
                 print("Brother: I Challenge You To Combat!")
@@ -191,7 +251,6 @@ class Simulation:
                 self.brother.take_damage(dek_damage)
                 print(f"Dek Dealt {dek_damage} Damage To Brother!")
                 self.dek.lose_honour(5)
-            
             
             elif brother_distance <= 5 and self.dek.honour < 20:
                 print("Brother pursues you for bringing shame!")
@@ -218,9 +277,8 @@ class Simulation:
                 self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
                 self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
             
-            
             else:
-                directions = [(1,0), (-1,0), (0,1), (0,-1)]
+                directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
                 random_direction = random.choice(directions)
                 
                 old_brother_pos = self.brother.get_position()
@@ -229,11 +287,7 @@ class Simulation:
                 
                 self.grid.clear_cell(old_brother_pos[0], old_brother_pos[1])
                 self.grid.set_cell(new_brother_pos[0], new_brother_pos[1], BROTHER)
-                        
-        
 
-
-        
         for creature in self.creatures:
             if creature.is_alive() and self.dek.get_position() == creature.get_position():
                 print("Attacking Creature")
@@ -245,25 +299,22 @@ class Simulation:
                     print("Creature is Dead")
                     self.grid.clear_cell(*creature.get_position())
 
-
         brother_x, brother_y = self.brother.get_position()
         father_x, father_y = self.father.get_position()
         dek_x, dek_y = self.dek.get_position()
 
         father_distance_to_dek = abs(dek_x - father_x) + abs(dek_y - father_y)
         if father_distance_to_dek <= 3 and self.dek.honour > 30:
-            print("Father: You  Have Brought Honour To Me")
+            print("Father: You Have Brought Honour To Me")
         elif father_distance_to_dek <= 3 and self.dek.honour < 30:
-            print("Father: You  Have Shamed me ")
+            print("Father: You Have Shamed me")
 
         brother_distance_to_dek = abs(dek_x - brother_x) + abs(dek_y - brother_y)
         if brother_distance_to_dek <= 3 and self.dek.honour > 30:
-            print("Brother: You  Have Brought Honour To Me")
+            print("Brother: You Have Brought Honour To Me")
         elif brother_distance_to_dek <= 3 and self.dek.honour < 30:
-            print("Brother: You  Have Shamed me ")
-      
+            print("Brother: You Have Shamed me")
 
-       
         thia_x, thia_y = self.thia.get_position()
         dek_x, dek_y = self.dek.get_position()
         thia_distance = abs(dek_x - thia_x) + abs(dek_y - thia_y)
@@ -283,7 +334,6 @@ class Simulation:
             print(f"Thia: The adversary is {boss_distance} cells away")
             if self.dek.stamina < 30:
                 print("Thia: Warning - your stamina is critically low")
-                
 
         boss_x, boss_y = self.adversary.get_position()
         dek_x, dek_y = self.dek.get_position()
@@ -304,7 +354,6 @@ class Simulation:
             self.grid.set_cell(new_boss_pos[0], new_boss_pos[1], ADVERSARY)
             
             print(f"Boss hunts Dek! Distance: {len(boss_path)-1} cells")
-                
         
         if self.dek.get_position() == self.adversary.get_position():
             dek_damage = self.dek.attack()
@@ -315,14 +364,9 @@ class Simulation:
             if self.adversary.is_alive() == False:
                 self.dek.gain_honour(HONOUR_KILL_BOSS)
                 print("Boss is Dead!")
-                
-            
-    
     
     def display(self):
         print(f"Turn Number: {self.turncount}") 
         print(f"Dek Stamina: {self.dek.stamina} Dek Position: {self.dek.get_position()}  Dek Health: {self.dek.health}  Dek Honour: {self.dek.honour}")
         print(f"Boss Position: {self.adversary.get_position()}  Boss Health: {self.adversary.health}")
         self.grid.display()
-        
-   
