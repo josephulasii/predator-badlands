@@ -10,6 +10,7 @@ class Synthetic(BaseAgent):
       super().__init__(x, y, THIA_HEALTH)
       self.name = name
       self.damaged = True
+      self.is_repaired = False
 
  
     def can_move(self):

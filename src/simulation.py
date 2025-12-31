@@ -4,7 +4,7 @@ from agents.predator import Predator
 from agents.boss import Adversary
 from agents.Creature import Creature  
 from agents.synthetic import Synthetic
-from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS
+from utils.constants import PREDATOR, ADVERSARY, EMPTY, CREATURE, TRAP, FATHER, BROTHER, SYNTHETIC, FATHER_HEALTH, FATHER_STAMINA, BROTHER_HEALTH, BROTHER_STAMINA, HONOUR_KILL_CREATURE, HONOUR_KILL_BOSS,WEAPON_UPGRADE,REPAIR_KIT
 from algorithms.pathfinding import a_star
 
 class Simulation:
@@ -43,6 +43,19 @@ class Simulation:
             trap_pos = self.get_random_empty_position()
             self.traps.append(trap_pos)
             self.grid.set_cell(trap_pos[0], trap_pos[1], TRAP)
+
+        self.weapon_upgrades = []
+        for i in range(2):
+            weapon_pos = self.get_random_empty_position()
+            self.weapon_upgrades.append(weapon_pos)
+            self.grid.set_cell(weapon_pos[0], weapon_pos[1], WEAPON_UPGRADE)
+        
+        
+        self.repair_kits = []
+        for i in range(2):
+            repair_pos = self.get_random_empty_position()
+            self.repair_kits.append(repair_pos)
+            self.grid.set_cell(repair_pos[0], repair_pos[1], REPAIR_KIT)
 
         self.turncount = 0
         
@@ -182,6 +195,28 @@ class Simulation:
                 print(f"Lost 15 stamina! Current stamina: {self.dek.stamina}")
                 self.traps.remove(trap_pos)
                 self.grid.clear_cell(trap_pos[0], trap_pos[1])
+                break
+         
+        for weapon_pos in self.weapon_upgrades:
+            if self.dek.get_position() == weapon_pos:
+                print("Dek found a weapon upgrade!")
+                self.dek.attack_damage = self.dek.attack_damage + 10
+                print(f"Attack damage increased to {self.dek.attack_damage}!")
+                self.weapon_upgrades.remove(weapon_pos)
+                self.grid.clear_cell(weapon_pos[0], weapon_pos[1])
+                break
+        
+        for repair_pos in self.repair_kits:
+            if self.dek.get_position() == repair_pos:
+                print("Dek found a repair kit!")
+                if self.dek.carrying_thia:
+                    print("Thia has been repaired!")
+                    self.thia.is_repaired = True
+                else:
+                    print("Saved for when you pick up Thia!")
+                    self.dek.has_repair_kit = True
+                self.repair_kits.remove(repair_pos)
+                self.grid.clear_cell(repair_pos[0], repair_pos[1])
                 break
             
         if self.father.stamina >= 7:

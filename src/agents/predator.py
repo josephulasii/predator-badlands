@@ -13,6 +13,7 @@ class Predator(BaseAgent):
         self.honour = 0
         self.carrying_thia = False
         self.attack_damage = attack_damage 
+        self.has_repair_kit = False
        
         
        
