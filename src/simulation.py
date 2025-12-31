@@ -81,6 +81,47 @@ class Simulation:
                     nearest = creature
         
         return nearest
+    
+    def find_nearest_resource(self):
+        
+        dek_x, dek_y = self.dek.get_position()
+        nearest = None
+        min_distance = 999
+        resource_type = None
+        
+      
+        for weapon_pos in self.weapon_upgrades:
+            distance = abs(dek_x - weapon_pos[0]) + abs(dek_y - weapon_pos[1])
+            if distance < min_distance:
+                min_distance = distance
+                nearest = weapon_pos
+                resource_type = "weapon"
+        
+       
+        for repair_pos in self.repair_kits:
+            distance = abs(dek_x - repair_pos[0]) + abs(dek_y - repair_pos[1])
+            if distance < min_distance:
+                min_distance = distance
+                nearest = repair_pos
+                resource_type = "repair"
+        
+        return nearest, resource_type, min_distance
+    
+    def collect_resource(self, resource_pos, resource_type):
+        
+        dek_x, dek_y = self.dek.get_position()
+        
+        path = a_star(self.grid, (dek_x, dek_y), resource_pos, obstacles=self.traps)
+        
+        if path and len(path) > 1:
+            self.move_dek_along_path(path)
+        else:
+           
+            dx = 1 if dek_x < resource_pos[0] else -1 if dek_x > resource_pos[0] else 0
+            dy = 1 if dek_y < resource_pos[1] else -1 if dek_y > resource_pos[1] else 0
+            if dx != 0 or dy != 0:
+                self.move_dek(dx if dx != 0 else 0, dy if dy != 0 else 0)
+
 
     def move_dek(self, dx, dy):
         
@@ -163,7 +204,15 @@ class Simulation:
             return
         
       
-        print("RULE 4: Pursuing boss")
+        if self.dek.health > 40 and boss_distance > 3:
+            resource_pos, resource_type, distance = self.find_nearest_resource()
+            if resource_pos and distance < 10:
+                print(f"RULE 4: {resource_type} upgrade nearby → COLLECTING")
+                self.collect_resource(resource_pos, resource_type)
+                return
+        
+        
+        print("RULE 5: Pursuing boss")
         self.pursue_boss()
 
     def run_turn(self):
